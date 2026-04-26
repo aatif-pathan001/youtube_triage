@@ -1,8 +1,10 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 
 
 class Settings(BaseSettings):
     google_api_key: str
+    model_config = ConfigDict(env_file='.env')
 
     # LLM settings
     model: str = 'gemini-2.5-flash'
@@ -18,9 +20,6 @@ class Settings(BaseSettings):
     # Vector store settings
     search_type: str = "similarity"
     top_k: int = 3
-
-    class Config:
-        env_file = '.env'
 
 
 settings = Settings()
