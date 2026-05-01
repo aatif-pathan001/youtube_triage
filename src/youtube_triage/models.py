@@ -46,5 +46,7 @@ class Message(Base):
     )
     question = Column(Text, nullable=False)
     answer = Column(Text, nullable=False)
-    source_chunk_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=False)
+    source_chunk_ids: list[uuid.UUID] = Column(
+        ARRAY(UUID(as_uuid=True)), nullable=False
+    )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
