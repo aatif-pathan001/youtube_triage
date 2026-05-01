@@ -1,9 +1,11 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import Integer, String, DateTime, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from pgvector.sqlalchemy import Vector
+from sqlalchemy.orm import DeclarativeBase
+from typing import Optional
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -13,12 +15,18 @@ class Base(DeclarativeBase):
 class Session(Base):
     __tablename__ = "sessions"
 
-    session_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    url = Column(Text, nullable=False)
-    status = Column(String(50), nullable=False, default="processing")
-    video_title = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="processing"
+    )
+    video_title: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
@@ -26,25 +34,33 @@ class Session(Base):
 class Chunk(Base):
     __tablename__ = "chunks"
 
-    chunk_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id = Column(
+    chunk_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    session_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("sessions.session_id"), nullable=False
     )
-    text = Column(Text, nullable=False)
-    embedding = Column(Vector(384), nullable=False)
-    start_sec = Column(Integer, nullable=False)
-    end_sec = Column(Integer, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding = mapped_column(Vector(384), nullable=False)  # type: ignore[var-annotated]
+    start_sec: Mapped[uuid.UUID] = mapped_column(Integer, nullable=False)
+    end_sec: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
 
 
 class Message(Base):
     __tablename__ = "messages"
 
-    message_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id = Column(
+    message_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    session_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("sessions.session_id"), nullable=False
     )
-    question = Column(Text, nullable=False)
-    answer = Column(Text, nullable=False)
-    source_chunk_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=False)  # type: ignore[var-annotated]
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    source_chunk_ids = mapped_column(ARRAY(UUID(as_uuid=True)), nullable=False)  # type: ignore[var-annotated]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
