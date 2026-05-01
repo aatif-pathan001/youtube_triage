@@ -20,5 +20,7 @@ class Settings(BaseSettings):
     search_type: str = "similarity"
     top_k: int = 3
 
+    database_url: str = ""
+
 
 settings = Settings()
