@@ -1,6 +1,10 @@
-from fastapi import FastAPI
-from fastapi import APIRouter
+from fastapi import FastAPI, Depends, APIRouter
 from pydantic import BaseModel
+from youtube_triage.database import get_db
+from youtube_triage.models import Session as SessionModel
+from sqlalchemy.orm import Session
+import uuid
+from fastapi import HTTPException
 
 
 # ------ Request/ Response Models ------
@@ -9,7 +13,7 @@ class SessionRequest(BaseModel):
 
 
 class SessionResponse(BaseModel):
-    session_id: str
+    session_id: uuid.UUID
     status: str
 
 
@@ -34,23 +38,38 @@ router_v1 = APIRouter(prefix="/v1")
 
 
 @router_v1.post("/sessions", status_code=202, response_model=SessionResponse)
-async def create_session(session_request: SessionRequest) -> SessionResponse:
-    return SessionResponse(session_id="abc123", status="processing")
+async def create_session(
+    session_request: SessionRequest, db: Session = Depends(get_db)
+) -> SessionResponse:
+    new_session = SessionModel(url=session_request.url)
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
+    return SessionResponse(session_id=new_session.session_id, status=new_session.status)
 
 
 @router_v1.get(
     "/sessions/{session_id}/status", response_model=SessionResponse, status_code=200
 )
-async def get_session_status(session_id: str) -> SessionResponse:
-    current_status = "processing"
-    return SessionResponse(session_id=session_id, status=current_status)
+async def get_session_status(
+    session_id: uuid.UUID, db: Session = Depends(get_db)
+) -> SessionResponse:
+    session = db.get(SessionModel, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return SessionResponse(session_id=session_id, status=session.status)
 
 
 @router_v1.post(
     "/sessions/{session_id}/messages", response_model=MessageResponse, status_code=200
 )
-async def ask_question(question: MessageRequest) -> MessageResponse:
-    pass
+async def ask_question(
+    session_id: uuid.UUID, question: MessageRequest, db: Session = Depends(get_db)
+) -> MessageResponse:
+    session = db.get(SessionModel, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
     return MessageResponse(
         answer="result", timestamps=[Timestamp(sec=0, text="Sample timestamp")]
     )
