@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from pgvector.sqlalchemy import Vector
+from sqlalchemy.orm import Mapped
 
 
 class Base(DeclarativeBase):
@@ -46,5 +47,5 @@ class Message(Base):
     )
     question = Column(Text, nullable=False)
     answer = Column(Text, nullable=False)
-    source_chunk_ids: list = Column(ARRAY(UUID(as_uuid=True)), nullable=False)
+    source_chunk_ids: Mapped[list] = Column(ARRAY(UUID(as_uuid=True)), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
