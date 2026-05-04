@@ -5,6 +5,7 @@ from youtube_triage.models import Session as SessionModel
 from sqlalchemy.orm import Session
 import uuid
 from fastapi import HTTPException
+from youtube_triage.services.pubsub import publish_job
 
 
 # ------ Request/ Response Models ------
@@ -44,6 +45,7 @@ async def create_session(
     new_session = SessionModel(url=session_request.url)
     db.add(new_session)
     db.commit()
+    publish_job(new_session.session_id, new_session.url)
     db.refresh(new_session)
     return SessionResponse(session_id=new_session.session_id, status=new_session.status)
 

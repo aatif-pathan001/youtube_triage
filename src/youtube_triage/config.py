@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     top_k: int = 3
 
     database_url: str = ""
+    gcp_project_id: str = ""
 
 
 settings = Settings()
