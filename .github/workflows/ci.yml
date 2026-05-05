@@ -10,13 +10,29 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services: 
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTRGRES_USER: postgres
+          POSTRGRES_PASSWORD: postgres
+          POSTRGRES_DB: youtube_triage_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
-        with:
+        with:                          
           python-version: '3.10'
 
       - name: Install dependencies
@@ -29,6 +45,9 @@ jobs:
         run: mypy src/
 
       - name: Run tests
-        run: pytest tests/unit/ -v
+        run: pytest tests/ -v
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/youtube_triage_test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/youtube_triage_test
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
