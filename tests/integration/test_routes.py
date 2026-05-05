@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from youtube_triage.config import settings
 from youtube_triage.models import Base
 import pytest
+from sqlalchemy import text
 
 
 # Setup a test database
@@ -16,6 +17,9 @@ TestingSessionLocal = sessionmaker(bind=test_engine)
 
 @pytest.fixture(autouse=True)
 def clean_database():
+    with test_engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
     Base.metadata.create_all(bind=test_engine)
     yield
     Base.metadata.drop_all(bind=test_engine)
