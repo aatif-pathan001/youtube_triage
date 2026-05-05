@@ -3,6 +3,8 @@ from langchain_chroma import Chroma
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_core.documents import Document
 from youtube_triage.config import settings
+from sqlalchemy import text
+import uuid
 
 
 def create_vector_store(
@@ -36,3 +38,24 @@ def get_retriever(vector_store: Chroma) -> VectorStoreRetriever:
         search_type=settings.search_type, search_kwargs={"k": settings.top_k}
     )
     return retriever
+
+
+def search_chunks(
+    session_id: uuid.UUID,
+    question: str,
+    embedding: HuggingFaceEmbeddings,
+    db,
+    k: int = settings.top_k,
+) -> list:
+    query_embedding = embedding.embed_query(question)
+
+    results = db.execute(
+        text("""
+        SELECT text, start_sec, end_sec FROM chunks
+        WHERE session_id = :session_id
+        ORDER BY embedding <=> CAST(:embedding AS vector)
+        LIMIT :k
+"""),
+        {"session_id": str(session_id), "embedding": str(query_embedding), "k": k},
+    ).fetchall()
+    return results
