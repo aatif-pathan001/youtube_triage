@@ -45,7 +45,7 @@ jobs:
         run: mypy src/
 
       - name: Run tests
-        run: pytest tests/ -v
+        run: pytest tests/ -v --cov=src --cov-fail-under=60
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/youtube_triage_test
