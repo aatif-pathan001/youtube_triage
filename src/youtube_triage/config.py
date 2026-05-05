@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     database_url: str = ""
     gcp_project_id: str = ""
+    test_database_url: str = ""
 
 
 settings = Settings()
