@@ -27,8 +27,8 @@ def callback(message, embedding):
             db_chunk = Chunk(
                 session_id=session_id,
                 text=chunk.page_content,
-                start_sec=0,
-                end_sec=0,
+                start_sec=chunk.metadata.get("start_timestamp", 0),
+                end_sec=chunk.metadata.get("start_timestamp", 0) + 30,
                 embedding=embedding.embed_query(chunk.page_content),
             )
             db.add(db_chunk)

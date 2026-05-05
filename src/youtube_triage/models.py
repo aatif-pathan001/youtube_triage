@@ -42,7 +42,7 @@ class Chunk(Base):
     )
     text: Mapped[str] = mapped_column(Text, nullable=False)
     embedding = mapped_column(Vector(384), nullable=False)  # type: ignore[var-annotated]
-    start_sec: Mapped[uuid.UUID] = mapped_column(Integer, nullable=False)
+    start_sec: Mapped[int] = mapped_column(Integer, nullable=False)
     end_sec: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
